@@ -26,4 +26,30 @@
     });
     form.addEventListener('submit',function(e){e.preventDefault();send.click()});
   }
+  /* Consentimento e medição (Google Analytics) */
+  var GA='G-LGZMCXLQNN',KEY='ba_consent',loaded=false;
+  function getC(){try{return localStorage.getItem(KEY)}catch(e){return null}}
+  function setC(v){try{localStorage.setItem(KEY,v)}catch(e){}}
+  function loadGA(){
+    if(loaded)return;loaded=true;
+    window.dataLayer=window.dataLayer||[];
+    window.gtag=function(){dataLayer.push(arguments)};
+    gtag('js',new Date());gtag('config',GA);
+    var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+GA;document.head.appendChild(s);
+  }
+  function banner(){
+    if(document.getElementById('cookie-bar'))return;
+    var d=document.createElement('div');d.id='cookie-bar';d.setAttribute('role','region');d.setAttribute('aria-label','Aviso de cookies');
+    d.innerHTML='<p>Este site usa cookies do Google Analytics para medir visitas e melhorar o conteúdo, somente com a sua autorização. <a href="/#privacidade">Política de privacidade</a></p><div class="cb-actions"><button type="button" class="cb-no">Recusar</button><button type="button" class="cb-yes">Aceitar</button></div>';
+    document.body.appendChild(d);
+    d.querySelector('.cb-yes').addEventListener('click',function(){setC('yes');d.remove();loadGA()});
+    d.querySelector('.cb-no').addEventListener('click',function(){setC('no');d.remove()});
+  }
+  var c0=getC(); if(c0==='yes')loadGA(); else if(c0!=='no')banner();
+  var legal=document.querySelector('footer .legal');
+  if(legal){var pb=document.createElement('button');pb.type='button';pb.className='cookie-pref';pb.textContent='Preferências de cookies';pb.addEventListener('click',banner);legal.appendChild(document.createTextNode(' | '));legal.appendChild(pb)}
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href*="wa.me"]');
+    if(a&&loaded&&window.gtag){gtag('event','generate_lead',{method:'whatsapp',tema:a.dataset.tema||'',pagina:location.pathname})}
+  });
 })();
