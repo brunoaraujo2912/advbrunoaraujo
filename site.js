@@ -27,15 +27,30 @@
     form.addEventListener('submit',function(e){e.preventDefault();send.click()});
   }
   /* Consentimento e medição (Google Analytics) */
-  var GA='G-LGZMCXLQNN',KEY='ba_consent',loaded=false;
+  var GA='G-LGZMCXLQNN',KEY='ba_consent',loaded=false,off=false;
   function getC(){try{return localStorage.getItem(KEY)}catch(e){return null}}
   function setC(v){try{localStorage.setItem(KEY,v)}catch(e){}}
   function loadGA(){
-    if(loaded)return;loaded=true;
+    off=false;window['ga-disable-'+GA]=false;
+    if(loaded){gtag('consent','update',{analytics_storage:'granted'});return}
+    loaded=true;
     window.dataLayer=window.dataLayer||[];
     window.gtag=function(){dataLayer.push(arguments)};
+    gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
     gtag('js',new Date());gtag('config',GA);
     var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+GA;document.head.appendChild(s);
+  }
+  function stopGA(){
+    off=true;window['ga-disable-'+GA]=true;
+    if(loaded&&window.gtag)gtag('consent','update',{analytics_storage:'denied'});
+    var host=location.hostname,parts=host.split('.'),doms=['',host];
+    for(var i=1;i<parts.length-1;i++)doms.push('.'+parts.slice(i).join('.'));
+    document.cookie.split(';').forEach(function(c){
+      var n=c.split('=')[0].trim();
+      if(n==='_ga'||n.indexOf('_ga_')===0||n==='_gid'||n==='_gat'){
+        doms.forEach(function(d){document.cookie=n+'=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'+(d?'; domain='+d:'')});
+      }
+    });
   }
   function banner(){
     if(document.getElementById('cookie-bar'))return;
@@ -43,13 +58,14 @@
     d.innerHTML='<p>Este site usa cookies do Google Analytics para medir visitas e melhorar o conteúdo, somente com a sua autorização. <a href="/#privacidade">Política de privacidade</a></p><div class="cb-actions"><button type="button" class="cb-no">Recusar</button><button type="button" class="cb-yes">Aceitar</button></div>';
     document.body.appendChild(d);
     d.querySelector('.cb-yes').addEventListener('click',function(){setC('yes');d.remove();loadGA()});
-    d.querySelector('.cb-no').addEventListener('click',function(){setC('no');d.remove()});
+    d.querySelector('.cb-no').addEventListener('click',function(){setC('no');d.remove();stopGA()});
   }
-  var c0=getC(); if(c0==='yes')loadGA(); else if(c0!=='no')banner();
+  var c0=getC(); if(c0==='yes')loadGA(); else if(c0==='no')stopGA(); else banner();
   var legal=document.querySelector('footer .legal');
   if(legal){var pb=document.createElement('button');pb.type='button';pb.className='cookie-pref';pb.textContent='Preferências de cookies';pb.addEventListener('click',banner);legal.appendChild(document.createTextNode(' | '));legal.appendChild(pb)}
+  /* Mede o clique no botão do WhatsApp (abertura do aplicativo), não o envio da mensagem */
   document.addEventListener('click',function(e){
     var a=e.target.closest&&e.target.closest('a[href*="wa.me"]');
-    if(a&&loaded&&window.gtag){gtag('event','generate_lead',{method:'whatsapp',tema:a.dataset.tema||'',pagina:location.pathname})}
+    if(a&&loaded&&!off&&window.gtag){gtag('event','clique_whatsapp',{tema:a.dataset.tema||'',pagina:location.pathname})}
   });
 })();
