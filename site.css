@@ -315,4 +315,11 @@ footer details p{margin-top:12px;max-width:75ch}
 .area-cta{justify-content:center}
 .area-cta .btn{align-self:flex-start}
 nav.main a[aria-current="page"]{color:var(--on-panel);border-color:var(--bronze)}
-@media (min-width:821px) and (max-width:1100px){nav.main{gap:14px;font-size:.8rem}nav.main a.btn{padding:10px 14px}}
+@media (min-width:1121px) and (max-width:1280px){nav.main{gap:18px;font-size:.82rem}nav.main a.btn{padding:10px 14px}}
+@media (min-width:821px) and (max-width:1120px){
+  .menu-btn{display:block}
+  nav.main{display:none;flex-basis:100%;flex-direction:column;align-items:flex-start;gap:4px;padding-bottom:18px}
+  nav.main.open{display:flex}
+  nav.main a{padding-block:10px;font-size:.95rem}
+  nav.main a.btn{margin-top:8px}
+}
